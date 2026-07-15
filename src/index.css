@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #030712;
+    color: #f3f4f6;
+    font-family: 'Outfit', 'Inter', sans-serif;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(214, 0, 255, 0.08) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(0, 240, 255, 0.08) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
+
+  /* Custom Scrollbar for premium dark theme */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #030712;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1f2937;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #00f0ff;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    background: rgba(17, 24, 39, 0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  .glass-card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .glass-card-hover:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0, 240, 255, 0.3);
+    box-shadow: 0 10px 25px -5px rgba(0, 240, 255, 0.1), 0 0 15px rgba(0, 240, 255, 0.05);
+  }
+
+  .text-glow-blue {
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+  }
+
+  .text-glow-purple {
+    text-shadow: 0 0 10px rgba(214, 0, 255, 0.6);
+  }
+
+  .bg-gradient-fifa {
+    background: linear-gradient(135deg, #00f0ff 0%, #d600ff 100%);
+  }
+
+  .border-glow-blue {
+    border-color: rgba(0, 240, 255, 0.4);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+  }
+
+  .animate-neon-pulse {
+    animation: neonPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@keyframes neonPulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 5px rgba(0, 240, 255, 0.1);
+  }
+}
+
+/* Typing animation bubble style */
+.typing-dots span {
+  width: 6px;
+  height: 6px;
+  background-color: #9ca3af;
+  border-radius: 50%;
+  display: inline-block;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.typing-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+  0%, 80%, 100% { 
+    transform: scale(0);
+  } 40% { 
+    transform: scale(1.0);
+  }
+}
