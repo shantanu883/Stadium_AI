@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { GlassCard } from '../components/GlassCard';
 import { LiveBadge } from '../components/LiveBadge';
+import { PredictiveAnalytics } from '../components/PredictiveAnalytics';
+import { AdvancedAnalytics } from '../components/AdvancedAnalytics';
 import { 
   Ticket, 
   CloudSun, 
@@ -9,14 +11,74 @@ import {
   Clock, 
   Sparkles,
   Calendar,
-  AlertTriangle
+  AlertTriangle,
+  BarChart3,
+  Zap,
+  Shield
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { performanceMonitor } from '../utils/performanceMonitor';
+import { aiModelManager } from '../utils/aiModels';
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [countdown, setCountdown] = useState('02:14:45');
+  const [performanceData, setPerformanceData] = useState<any>(null);
+  const [aiInsights, setAiInsights] = useState<any>(null);
+  const [showAdvancedAnalytics, setShowAdvancedAnalytics] = useState(false);
+
+  // Initialize performance monitoring
+  useEffect(() => {
+    const initializeMonitoring = async () => {
+      try {
+        // Start performance monitoring
+        performanceMonitor.startMonitoring();
+        
+        // Set performance budgets
+        performanceMonitor.setPerformanceBudgets({
+          'api_response_time': 500,
+          'memory_percentage': 70,
+          'frame_rate': 30
+        });
+
+        // Get initial performance report
+        const report = performanceMonitor.getPerformanceReport();
+        setPerformanceData(report);
+
+        // Generate AI insights for crowd prediction
+        const crowdPrediction = await aiModelManager.predictCrowdSurge({
+          currentDensity: 65,
+          timeOfDay: new Date().getHours(),
+          eventPhase: 'pre',
+          weatherFactor: 0.8,
+          historicalPattern: 0.7
+        });
+        setAiInsights(crowdPrediction);
+      } catch (error) {
+        console.error('Failed to initialize monitoring:', error);
+      }
+    };
+
+    initializeMonitoring();
+
+    // Cleanup on unmount
+    return () => {
+      performanceMonitor.stopMonitoring();
+    };
+  }, []);
+
+  // Update performance data periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (performanceMonitor) {
+        const report = performanceMonitor.getPerformanceReport();
+        setPerformanceData(report);
+      }
+    }, 10000); // Update every 10 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Simulate ticket countdown timer
   useEffect(() => {
@@ -224,6 +286,134 @@ export const Dashboard: React.FC = () => {
           Gate C (South) is currently heavily congested. Spectators seated in Sections F, G, and H are strongly advised to enter through Gate A and bypass the outer South concourse.
         </p>
       </GlassCard>
+
+      {/* Advanced Features Section - Admin/Staff Only */}
+      {user && ['admin', 'staff'].includes(user.role) && (
+        <>
+          {/* AI Insights and Performance Monitoring */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* AI Predictive Analytics */}
+            <PredictiveAnalytics />
+
+            {/* Performance Monitor Dashboard */}
+            <GlassCard accent="green" className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-fifa-neonGreen/20 rounded-lg">
+                    <BarChart3 className="w-6 h-6 text-fifa-neonGreen" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white">System Performance</h3>
+                    <p className="text-fifa-neonGreen text-sm">Real-time monitoring</p>
+                  </div>
+                </div>
+                <LiveBadge 
+                  status={performanceData?.overall_score > 80 ? "normal" : "warning"} 
+                  label={`Score: ${performanceData?.overall_score || 0}/100`} 
+                />
+              </div>
+
+              {performanceData && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 bg-fifa-dark/30 rounded-lg">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Zap className="w-4 h-4 text-fifa-neonYellow" />
+                        <span className="text-xs font-semibold text-gray-300">Memory</span>
+                      </div>
+                      <div className="text-lg font-bold text-white">
+                        {performanceData.resources.memory.percentage}%
+                      </div>
+                    </div>
+                    <div className="p-3 bg-fifa-dark/30 rounded-lg">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Shield className="w-4 h-4 text-fifa-accent" />
+                        <span className="text-xs font-semibold text-gray-300">Latency</span>
+                      </div>
+                      <div className="text-lg font-bold text-white">
+                        {Math.round(performanceData.resources.network.latency)}ms
+                      </div>
+                    </div>
+                  </div>
+
+                  {performanceData.bottlenecks.length > 0 && (
+                    <div className="p-3 bg-fifa-neonRed/10 border border-fifa-neonRed/20 rounded-lg">
+                      <h4 className="text-xs font-semibold text-fifa-neonRed mb-2">Active Issues</h4>
+                      <ul className="space-y-1">
+                        {performanceData.bottlenecks.slice(0, 2).map((bottleneck: string, index: number) => (
+                          <li key={index} className="text-xs text-gray-300">{bottleneck}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <button
+                onClick={() => setShowAdvancedAnalytics(!showAdvancedAnalytics)}
+                className="w-full mt-4 py-2 px-4 bg-fifa-neonGreen/10 hover:bg-fifa-neonGreen/20 border border-fifa-neonGreen/20 text-fifa-neonGreen text-xs font-semibold rounded-lg transition-colors"
+              >
+                {showAdvancedAnalytics ? 'Hide' : 'Show'} Advanced Analytics
+              </button>
+            </GlassCard>
+          </div>
+
+          {/* AI Insights Summary */}
+          {aiInsights && (
+            <GlassCard accent="purple" className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-fifa-neonPurple/20 rounded-lg">
+                  <Sparkles className="w-6 h-6 text-fifa-neonPurple animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">AI Stadium Intelligence</h3>
+                  <p className="text-fifa-neonPurple text-sm">Machine learning insights</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 bg-fifa-dark/30 rounded-lg border border-fifa-neonPurple/20">
+                  <h4 className="text-sm font-semibold text-fifa-neonPurple mb-2">Crowd Prediction</h4>
+                  <div className="text-2xl font-bold text-white mb-1">
+                    {aiInsights.prediction.riskLevel.toUpperCase()}
+                  </div>
+                  <p className="text-xs text-gray-300">
+                    {Math.round(aiInsights.prediction.surgeProbability * 100)}% surge probability
+                  </p>
+                  <p className="text-xs text-fifa-accent mt-1">
+                    Expected: {aiInsights.prediction.expectedTimeframe}
+                  </p>
+                </div>
+
+                <div className="p-4 bg-fifa-dark/30 rounded-lg border border-fifa-neonPurple/20">
+                  <h4 className="text-sm font-semibold text-fifa-neonPurple mb-2">Model Performance</h4>
+                  <div className="text-2xl font-bold text-white mb-1">
+                    {Math.round(aiInsights.confidence * 100)}%
+                  </div>
+                  <p className="text-xs text-gray-300">Confidence level</p>
+                  <p className="text-xs text-fifa-accent mt-1">
+                    Processed in {Math.round(aiInsights.processingTime)}ms
+                  </p>
+                </div>
+              </div>
+
+              {aiInsights.prediction.recommendedActions.length > 0 && (
+                <div className="mt-4 p-4 bg-gradient-to-r from-fifa-neonPurple/10 to-fifa-accent/10 rounded-lg">
+                  <h4 className="text-sm font-semibold text-white mb-2">🤖 AI Recommendations</h4>
+                  <ul className="space-y-1">
+                    {aiInsights.prediction.recommendedActions.slice(0, 2).map((action: string, index: number) => (
+                      <li key={index} className="text-xs text-gray-300">• {action}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </GlassCard>
+          )}
+
+          {/* Advanced Analytics Component */}
+          {showAdvancedAnalytics && <AdvancedAnalytics />}
+        </>
+      )}
     </div>
   );
 };
