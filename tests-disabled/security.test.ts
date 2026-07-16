@@ -1,6 +1,6 @@
 import request from 'supertest';
 import express = require('express');
-import cors from 'cors';
+import cors = require('cors');
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
